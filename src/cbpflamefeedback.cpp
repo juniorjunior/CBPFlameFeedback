@@ -168,7 +168,7 @@ int main (int argc, const char* argv[], char* envp[]) {
          exit(1);
       }
    } else {
-      settingsFile = "/etc/fbflamefeedback.config";
+      settingsFile = "/etc/cbpflamefeedback.config";
       if ( FILE *file = fopen(settingsFile.c_str(), "r")) {} else {
          cout << "Error: Default config file \"" << settingsFile << "\" not found!\n";
          exit(1);
