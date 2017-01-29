@@ -29,6 +29,7 @@ int cbpGasGPIO = 0;
 int fbGasGPIO = 0;
 int fbIgniterGPIO = 0;
 int fbFlameSensorGPIO = 0;
+int fbFlameSensorMode = LOW;
 int igniterPulseDuration = 0;
 int igniterTimeBetweenPulses = 0;
 int noFlameShutdownTime = 0;
@@ -108,7 +109,7 @@ void monitorThread() {
                ignitionFailedClock = steady_clock::now() + milliseconds(noFlameShutdownTime);
             }
             // If the flame sensor is high we turn off the igniter and reset ignitionFailed
-            if ( digitalRead(fbFlameSensorGPIO) == 1 ) {
+            if ( digitalRead(fbFlameSensorGPIO) == fbFlameSensorMode ) {
                if ( igniterActive ) {
                   igniterActive = false;
                   if ( debug ) cout << "Flame detected! Entering stable burning state.\n" << std::flush;
@@ -185,12 +186,21 @@ int main (int argc, const char* argv[], char* envp[]) {
    igniterPulseDuration = config.pInt("igniterPulseDuration");
    igniterTimeBetweenPulses = config.pInt("igniterTimeBetweenPulses");
    noFlameShutdownTime = config.pInt("noFlameShutdownTime");
+   if ( config.pString("FBFlameSensorMode") == "low" ) {
+      fbFlameSensorMode = LOW;
+   } else if ( config.pString("FBFlameSensorMode") == "high" ) {
+      fbFlameSensorMode = HIGH;
+   } else {
+      cout << "Config File Error: FBFlameSensorMode must be set to \"high\" or \"low\" (without quotes)\n";
+      exit(1);
+   }
    if ( debug ) {
       cout << "Using config file \"" << settingsFile << "\"\n";
       cout << "CBPGasGPIO: " << cbpGasGPIO << "\n";
       cout << "FBGasGPIO: " << fbGasGPIO << "\n";
       cout << "FBIgniterGPIO: " << fbIgniterGPIO << "\n";
       cout << "FBFlameSensorGPIO: " << fbFlameSensorGPIO << "\n";
+      cout << "FBFlameSensorMode: " << ((fbFlameSensorMode == HIGH) ? "high" : "low") << "\n";
       cout << "igniterPulseDuration: " << igniterPulseDuration << "\n";
       cout << "igniterTimeBetweenPulses: " << igniterTimeBetweenPulses << "\n";
       cout << "noFlameShutdownTime: " << noFlameShutdownTime << "\n";
