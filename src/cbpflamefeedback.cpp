@@ -42,6 +42,17 @@ void safeShutdown(int sig) {
    exit(0);
 }
 
+// Setup our pins
+void setupPins() {
+   wiringPiSetup();
+   pinMode(fbGasGPIO, OUTPUT);
+   pinMode(fbIgniterGPIO, OUTPUT);
+   pinMode(fbFlameSensorGPIO, INPUT);
+   digitalWrite(fbGasGPIO, 0);
+   digitalWrite(fbIgniterGPIO, 0);
+   return;
+}
+
 // This thread runs all the time but does nothing but sleep unless the
 // global variable "igniterActive" is true. When active it will cycle
 // the igniter on and off based on settings from the config file.
@@ -97,7 +108,10 @@ void monitorThread() {
          if ( !(ignitionFailed && (steady_clock::now() < ignitionRetryClock)) ) {
             // Set cbpGasEnabled to true if this is our first time through after
             // the CraftBeerPi gas GPIO goes high
-            if ( !cbpGasEnabled ) cbpGasEnabled = true;
+            if ( !cbpGasEnabled ) {
+               cbpGasEnabled = true;
+               setupPins();
+            }
             // If the burner isn't enabled we need to set all the "turn burner on"
             // initial states and registering the clock point for monitoring ignition failure
             if ( !burnerEnabled ) {
@@ -207,13 +221,7 @@ int main (int argc, const char* argv[], char* envp[]) {
       cout << "\n";
    }
 
-   // Setup our pins
-   wiringPiSetup();
-   pinMode(fbGasGPIO, OUTPUT);
-   pinMode(fbIgniterGPIO, OUTPUT);
-   pinMode(fbFlameSensorGPIO, INPUT);
-   digitalWrite(fbGasGPIO, 0);
-   digitalWrite(fbIgniterGPIO, 0);
+   setupPins();
 
    // Start the threads
    thread igniterT(igniterThread);
